@@ -1,0 +1,53 @@
+package config
+
+import (
+	"github.com/spf13/viper"
+)
+
+// Конфиг сервера
+type ServerConfig struct {
+	Port string `mapstructure:"port"`
+}
+
+// MinIO конфиг
+type MinioConfig struct {
+	Endpoint   string `mapstructure:"endpoint"`
+	Access_key string `mapstructure:"access_key"`
+	Secret_key string `mapstructure:"secret_key"`
+}
+
+// Конфиг приложения
+type Config struct {
+	Server ServerConfig `mapstructure:"server"`
+	Minio  MinioConfig  `mapstructure:"minio"`
+}
+
+var vp *viper.Viper
+
+// Загрузка конфига
+func LoadConfig() (Config, error) {
+	// Создание viper объекта конфига
+	vp = viper.New()
+
+	// Создание объекта конфига
+	var config Config
+
+	// Параметры конфига
+	vp.SetConfigName("config")
+	vp.SetConfigType("json")
+	vp.AddConfigPath("config")
+
+	// Чтение из config/config.json
+	err := vp.ReadInConfig()
+	if err != nil {
+		return Config{}, err
+	}
+
+	// Десериализация json конфига
+	err = vp.Unmarshal(&config)
+	if err != nil {
+		return Config{}, err
+	}
+
+	return config, nil
+}

@@ -1,0 +1,37 @@
+basePath: /
+host: localhost:8000
+info:
+  contact: {}
+  description: API Server for upload file
+  title: Upload file
+  version: "1.0"
+paths:
+  /v1/files:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload file and save in host
+      parameters:
+      - description: Upload file
+        in: body
+        name: File
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success upload
+          schema:
+            type: body
+        "404":
+          description: Bad request data
+          schema:
+            type: body
+        "500":
+          description: Server error
+          schema:
+            type: body
+      summary: Uploading file
+swagger: "2.0"
