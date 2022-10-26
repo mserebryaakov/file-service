@@ -61,28 +61,28 @@ func (c *Client) GetBucketFiles(ctx context.Context, bucketName string) ([]*mini
 }
 
 // Загрузка файла в bucketName (если backet не найдена - ошибка)
-func (c *Client) UploadFile(ctx context.Context, fileId, fileName, bucketName string, fileSize int64, reader io.Reader) error {
+func (c *Client) UploadFile(ctx context.Context, fileId, fileName, bucketName string, fileSize int64, reader io.Reader) (string, error) {
 	found, err := c.minioClient.BucketExists(ctx, bucketName)
-	if err != nil {
-		return fmt.Errorf("Bucket exists failed with err: %w", err)
+	if err != nil || !found {
+		err = c.minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
+		if err != nil {
+			return "", fmt.Errorf("Failed to create Bucket with err: %w", err)
+		}
 	}
 
-	if !found {
-		return fmt.Errorf("Bucket not found")
-	} else {
-		c.log.Debugf("Put new object %s to bucket %s", fileName, bucketName)
-		_, err := c.minioClient.PutObject(ctx, bucketName, fileId, reader, fileSize,
-			minio.PutObjectOptions{
-				UserMetadata: map[string]string{
-					"Name": fileName,
-				},
-				ContentType: "application/octet-stream",
-			})
-		if err != nil {
-			return fmt.Errorf("Failed to upload file. err: %w", err)
-		}
-		return nil
+	c.log.Debugf("Put new object %s to bucket %s", fileName, bucketName)
+	info, err := c.minioClient.PutObject(ctx, bucketName, fileId, reader, fileSize,
+		minio.PutObjectOptions{
+			UserMetadata: map[string]string{
+				"Name": fileName,
+			},
+			ContentType: "application/octet-stream",
+		})
+	if err != nil {
+		return "", fmt.Errorf("Failed to upload file. err: %w", err)
 	}
+
+	return info.Key, nil
 }
 
 // Удаление файла

@@ -36,9 +36,18 @@ func (h *filesHandler) Register(router *gin.Engine) {
 	}
 }
 
+// Получение файла из bucket по id
+// @Summary      Get file
+// @Tags file
+// @Description  Get file from bucket by id
+// @Produce      text/plain
+// @Param        id query string true "file id"
+// @Param        bucket query string true "bucket name"
+// @Success      200  {object}  string "Success get file"
+// @Failure		 400  {object}  messageResponse "Invalid parameters"
+// @Failure		 500  {object}  messageResponse "Server error"
+// @Router       /v1/file [get]
 func (h *filesHandler) GetFile(c *gin.Context) {
-	h.log.Debug("Get file")
-
 	bucket := c.Query("bucket")
 	if bucket == "" {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid parameters: missing - 'bucket'")
@@ -51,8 +60,11 @@ func (h *filesHandler) GetFile(c *gin.Context) {
 		return
 	}
 
+	h.log.Debugf("Get file from %s bucket with %s (id)", bucket, id)
+
 	f, err := h.fileService.GetFile(c.Request.Context(), bucket, id)
 	if err != nil {
+		h.log.Errorf("Error get file from %s bucket with %s (id) with err: %v", bucket, id, err)
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -62,6 +74,16 @@ func (h *filesHandler) GetFile(c *gin.Context) {
 	c.Writer.Write(f.Bytes)
 }
 
+// Получение файлов из bucket
+// @Summary      Get files
+// @Tags file
+// @Description  Get files from bucket
+// @Produce      json
+// @Param        bucket query string true "bucket name"
+// @Success      200  {object}  file.File[] "Success get files"
+// @Failure		 400  {object}  messageResponse "Invalid parameters"
+// @Failure		 500  {object}  messageResponse "Server error"
+// @Router       /v1/files [get]
 func (h *filesHandler) GetFilesByBucketName(c *gin.Context) {
 	h.log.Debug("Get file by bucket name")
 
@@ -71,8 +93,11 @@ func (h *filesHandler) GetFilesByBucketName(c *gin.Context) {
 		return
 	}
 
+	h.log.Debugf("Get files from %s bucket", bucket)
+
 	files, err := h.fileService.GetFilesByBucketName(c.Request.Context(), bucket)
 	if err != nil {
+		h.log.Errorf("Error get files from %s bucket with err: %v", bucket, err)
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -80,18 +105,30 @@ func (h *filesHandler) GetFilesByBucketName(c *gin.Context) {
 	c.JSON(200, files)
 }
 
+// Создание файла в bucket
+// @Summary      Create file
+// @Tags file
+// @Description  Create files in bucket
+// @Accept		 multipart/form-data
+// @Produce      json
+// @Param        bucket query string true "bucket name"
+// @Success      201  {object}  newIdResponse "Success create file"
+// @Failure		 400  {object}  messageResponse "Invalid parameters or multipart data"
+// @Failure		 500  {object}  messageResponse "Server error"
+// @Router       /v1/file [post]
 func (h *filesHandler) CreateFile(c *gin.Context) {
-	h.log.Debug("Create file")
-
 	bucket := c.Query("bucket")
 	if bucket == "" {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid parameters: missing - 'bucket'")
 	}
 
+	h.log.Debugf("Create files in %s bucket", bucket)
+
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MAX_UPLOAD_SIZE)
 
 	file, fileHeader, err := c.Request.FormFile("file")
 	if err != nil {
+		h.log.Errorf("Bad multipart parsing with err: %v", err)
 		NewErrorResponse(c, http.StatusBadRequest, "Bad multipart")
 		return
 	}
@@ -104,15 +141,29 @@ func (h *filesHandler) CreateFile(c *gin.Context) {
 		Reader: file,
 	}
 
-	err = h.fileService.Create(c.Request.Context(), bucket, dto)
+	id, err := h.fileService.Create(c.Request.Context(), bucket, dto)
 	if err != nil {
+		h.log.Errorf("Error create file in %s bucket with err: %v", bucket, err)
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(201, "Success")
+	c.JSON(201, &newIdResponse{
+		Id: id,
+	})
 }
 
+// Удаление файла в bucket по id
+// @Summary      Delete file
+// @Tags file
+// @Description  Delete files in bucket
+// @Produce      json
+// @Param        id query string true "file id"
+// @Param        bucket query string true "bucket name"
+// @Success      200  {object}  string "Success create file"
+// @Failure		 400  {object}  messageResponse "Invalid parameters"
+// @Failure		 500  {object}  messageResponse "Server error"
+// @Router       /v1/file [delete]
 func (h *filesHandler) DeleteFile(c *gin.Context) {
 	h.log.Debug("Delete file")
 
@@ -128,8 +179,11 @@ func (h *filesHandler) DeleteFile(c *gin.Context) {
 		return
 	}
 
+	h.log.Debugf("Delete file from %s bucket with %s (id)", bucket, id)
+
 	err := h.fileService.Delete(c.Request.Context(), bucket, id)
 	if err != nil {
+		h.log.Errorf("Error delete file in %s bucket %s with (id) with err: %v", bucket, id, err)
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}

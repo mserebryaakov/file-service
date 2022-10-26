@@ -16,46 +16,218 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/files": {
+        "/v1/file": {
+            "get": {
+                "description": "Get file from bucket by id",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "Get file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "bucket name",
+                        "name": "bucket",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success get file",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/file.messageResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/file.messageResponse"
+                        }
+                    }
+                }
+            },
             "post": {
-                "description": "Upload file and save in host",
+                "description": "Create files in bucket",
                 "consumes": [
                     "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Uploading file",
+                "tags": [
+                    "file"
+                ],
+                "summary": "Create file",
                 "parameters": [
                     {
-                        "description": "Upload file",
-                        "name": "File",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "type": "string",
+                        "description": "bucket name",
+                        "name": "bucket",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Success upload",
+                    "201": {
+                        "description": "Success create file",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/file.newIdResponse"
                         }
                     },
-                    "404": {
-                        "description": "Bad request data",
+                    "400": {
+                        "description": "Invalid parameters or multipart data",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/file.messageResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/file.messageResponse"
                         }
                     }
+                }
+            },
+            "delete": {
+                "description": "Delete files in bucket",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "Delete file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "bucket name",
+                        "name": "bucket",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success create file",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/file.messageResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/file.messageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/files": {
+            "get": {
+                "description": "Get files from bucket",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "Get files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bucket name",
+                        "name": "bucket",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success get files",
+                        "schema": {
+                            "$ref": "#/definitions/file.File"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/file.messageResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/file.messageResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "file.File": {
+            "type": "object",
+            "properties": {
+                "file": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "file.messageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "file.newIdResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
                 }
             }
         }

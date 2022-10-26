@@ -3,9 +3,7 @@
         "port": ":8000"
     },
     "minio": {
-        "host": "localhost",
-        "port": ":9000",
-        "access_key": "minioadmin",
-        "secret_key": "minioadmin"
+        "host": "miniodb",
+        "port": ":9000"
     }
 }

@@ -21,7 +21,7 @@ func NewService(storage Storage, logger *logger.Logger) *service {
 type Service interface {
 	GetFile(ctx context.Context, bucketName, fileId string) (f *File, err error)
 	GetFilesByBucketName(ctx context.Context, bucketName string) ([]*File, error)
-	Create(ctx context.Context, bucketName string, dto CreateFileDTO) error
+	Create(ctx context.Context, bucketName string, dto CreateFileDTO) (string, error)
 	Delete(ctx context.Context, bucketName, fileId string) error
 }
 
@@ -41,17 +41,17 @@ func (s *service) GetFilesByBucketName(ctx context.Context, bucketName string) (
 	return files, nil
 }
 
-func (s *service) Create(ctx context.Context, bucketName string, dto CreateFileDTO) error {
+func (s *service) Create(ctx context.Context, bucketName string, dto CreateFileDTO) (string, error) {
 	dto.NormalizeName()
 	file, err := NewFile(dto)
 	if err != nil {
-		return err
+		return "", err
 	}
-	err = s.storage.CreateFile(ctx, bucketName, file)
+	id, err := s.storage.CreateFile(ctx, bucketName, file)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return id, nil
 }
 
 func (s *service) Delete(ctx context.Context, bucketName, fileName string) error {

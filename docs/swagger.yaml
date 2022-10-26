@@ -1,4 +1,28 @@
 basePath: /
+definitions:
+  file.File:
+    properties:
+      file:
+        items:
+          type: integer
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+    type: object
+  file.messageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  file.newIdResponse:
+    properties:
+      id:
+        type: string
+    type: object
 host: localhost:8000
 info:
   contact: {}
@@ -6,32 +30,122 @@ info:
   title: Upload file
   version: "1.0"
 paths:
-  /v1/files:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload file and save in host
+  /v1/file:
+    delete:
+      description: Delete files in bucket
       parameters:
-      - description: Upload file
-        in: body
-        name: File
+      - description: file id
+        in: query
+        name: id
         required: true
-        schema:
-          type: string
+        type: string
+      - description: bucket name
+        in: query
+        name: bucket
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Success upload
+          description: Success create file
           schema:
-            type: body
-        "404":
-          description: Bad request data
+            type: string
+        "400":
+          description: Invalid parameters
           schema:
-            type: body
+            $ref: '#/definitions/file.messageResponse'
         "500":
           description: Server error
           schema:
-            type: body
-      summary: Uploading file
+            $ref: '#/definitions/file.messageResponse'
+      summary: Delete file
+      tags:
+      - file
+    get:
+      description: Get file from bucket by id
+      parameters:
+      - description: file id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: bucket name
+        in: query
+        name: bucket
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Success get file
+          schema:
+            type: string
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/file.messageResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/file.messageResponse'
+      summary: Get file
+      tags:
+      - file
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create files in bucket
+      parameters:
+      - description: bucket name
+        in: query
+        name: bucket
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success create file
+          schema:
+            $ref: '#/definitions/file.newIdResponse'
+        "400":
+          description: Invalid parameters or multipart data
+          schema:
+            $ref: '#/definitions/file.messageResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/file.messageResponse'
+      summary: Create file
+      tags:
+      - file
+  /v1/files:
+    get:
+      description: Get files from bucket
+      parameters:
+      - description: bucket name
+        in: query
+        name: bucket
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success get files
+          schema:
+            $ref: '#/definitions/file.File'
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/file.messageResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/file.messageResponse'
+      summary: Get files
+      tags:
+      - file
 swagger: "2.0"

@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+
+  file-service:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - miniodb
+    networks:
+      - file-serice-network
+    restart: unless-stopped
+
+  miniodb:
+    image: minio/minio:latest
+    command: server --console-address ":9001" /data/
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-storage:/data
+    networks:
+      - file-serice-network
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+     interval: 30s
+     timeout: 20s
+     retries: 3
+
+
+networks:
+  file-serice-network:
+
+volumes:
+  minio-storage:

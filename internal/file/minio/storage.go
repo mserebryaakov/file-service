@@ -86,12 +86,12 @@ func (m *minioStorage) GetFilesByBucketName(ctx context.Context, bucketName stri
 	return files, nil
 }
 
-func (m *minioStorage) CreateFile(ctx context.Context, bucketName string, file *file.File) error {
-	err := m.client.UploadFile(ctx, file.ID, file.Name, bucketName, file.Size, bytes.NewBuffer(file.Bytes))
+func (m *minioStorage) CreateFile(ctx context.Context, bucketName string, file *file.File) (string, error) {
+	id, err := m.client.UploadFile(ctx, file.ID, file.Name, bucketName, file.Size, bytes.NewBuffer(file.Bytes))
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return id, nil
 }
 
 func (m *minioStorage) DeleteFile(ctx context.Context, bucketName, fileId string) error {
