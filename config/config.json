@@ -3,8 +3,9 @@
         "port": ":8000"
     },
     "minio": {
-        "endpoint": "minio-file-service:9000",
-        "access_key": "minio",
-        "secret_key": "minio123"
+        "host": "localhost",
+        "port": ":9000",
+        "access_key": "minioadmin",
+        "secret_key": "minioadmin"
     }
 }

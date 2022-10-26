@@ -42,16 +42,19 @@ func (h *filesHandler) GetFile(c *gin.Context) {
 	bucket := c.Query("bucket")
 	if bucket == "" {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid parameters: missing - 'bucket'")
+		return
 	}
 
 	id := c.Query("id")
 	if id == "" {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid parameters: missing - 'id'")
+		return
 	}
 
 	f, err := h.fileService.GetFile(c.Request.Context(), bucket, id)
 	if err != nil {
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", f.Name))
@@ -65,14 +68,16 @@ func (h *filesHandler) GetFilesByBucketName(c *gin.Context) {
 	bucket := c.Query("bucket")
 	if bucket == "" {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid parameters: missing - 'bucket'")
+		return
 	}
 
-	file, err := h.fileService.GetFilesByBucketName(c.Request.Context(), bucket)
+	files, err := h.fileService.GetFilesByBucketName(c.Request.Context(), bucket)
 	if err != nil {
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	c.JSON(200, file)
+	c.JSON(200, files)
 }
 
 func (h *filesHandler) CreateFile(c *gin.Context) {
@@ -102,6 +107,7 @@ func (h *filesHandler) CreateFile(c *gin.Context) {
 	err = h.fileService.Create(c.Request.Context(), bucket, dto)
 	if err != nil {
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	c.JSON(201, "Success")
@@ -113,16 +119,19 @@ func (h *filesHandler) DeleteFile(c *gin.Context) {
 	bucket := c.Query("bucket")
 	if bucket == "" {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid parameters: missing - 'bucket'")
+		return
 	}
 
 	id := c.Query("id")
 	if id == "" {
 		NewErrorResponse(c, http.StatusBadRequest, "Invalid parameters: missing - 'id'")
+		return
 	}
 
 	err := h.fileService.Delete(c.Request.Context(), bucket, id)
 	if err != nil {
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	c.JSON(200, "Success")

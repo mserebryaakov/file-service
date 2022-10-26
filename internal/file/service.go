@@ -6,25 +6,23 @@ import (
 	"github.com/mserebryaakov/file-service/pkg/logger"
 )
 
-// var _ Service = &service{}
-
 type service struct {
 	storage Storage
 	logger  *logger.Logger
 }
 
-func NewService(noteStorage Storage, logger *logger.Logger) *service {
+func NewService(storage Storage, logger *logger.Logger) *service {
 	return &service{
-		storage: noteStorage,
+		storage: storage,
 		logger:  logger,
 	}
 }
 
 type Service interface {
-	GetFile(ctx context.Context, bucketName, fileName string) (f *File, err error)
+	GetFile(ctx context.Context, bucketName, fileId string) (f *File, err error)
 	GetFilesByBucketName(ctx context.Context, bucketName string) ([]*File, error)
 	Create(ctx context.Context, bucketName string, dto CreateFileDTO) error
-	Delete(ctx context.Context, bucketName, fileName string) error
+	Delete(ctx context.Context, bucketName, fileId string) error
 }
 
 func (s *service) GetFile(ctx context.Context, bucketName, fileId string) (f *File, err error) {

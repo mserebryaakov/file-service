@@ -11,7 +11,8 @@ type ServerConfig struct {
 
 // MinIO конфиг
 type MinioConfig struct {
-	Endpoint   string `mapstructure:"endpoint"`
+	Host       string `mapstructure:"host"`
+	Port       string `mapstructure:"port"`
 	Access_key string `mapstructure:"access_key"`
 	Secret_key string `mapstructure:"secret_key"`
 }

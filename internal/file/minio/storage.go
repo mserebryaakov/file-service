@@ -16,8 +16,8 @@ type minioStorage struct {
 	logger *logger.Logger
 }
 
-func NewStorage(endpoint, accessKeyID, secretAccessKey string, logger *logger.Logger) (file.Storage, error) {
-	client, err := minio.NewClient(endpoint, accessKeyID, secretAccessKey, *logger)
+func NewStorage(endpoint, accessKeyID, secretAccessKey string, useSSL bool, logger *logger.Logger) (file.Storage, error) {
+	client, err := minio.NewClient(endpoint, accessKeyID, secretAccessKey, useSSL, *logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create minio client. err: %w", err)
 	}

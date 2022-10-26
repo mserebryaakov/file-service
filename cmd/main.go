@@ -35,7 +35,7 @@ func main() {
 		log.Fatalf("Failed to load configs: %v", err)
 	}
 
-	repository, err := minio.NewStorage(cfg.Minio.Endpoint, cfg.Minio.Access_key, cfg.Minio.Secret_key, log)
+	repository, err := minio.NewStorage(cfg.Minio.Host+cfg.Minio.Port, cfg.Minio.Access_key, cfg.Minio.Secret_key, false, log)
 	if err != nil {
 		log.Fatalf("Minio start error: %v", err)
 	}
