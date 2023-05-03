@@ -4,10 +4,12 @@ services:
 
   file-service:
     build: .
-    ports:
-      - "8000:8000"
     depends_on:
       - miniodb
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
     networks:
       - file-serice-network
     restart: unless-stopped

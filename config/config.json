@@ -3,7 +3,7 @@
         "port": ":8080"
     },
     "minio": {
-        "host": "localhost",
+        "host": "miniodb",
         "port": ":9000"
     }
 }

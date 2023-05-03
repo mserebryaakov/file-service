@@ -1,0 +1,13 @@
+cmd/docs
+.env
+
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.log
+go.work
+.vscode

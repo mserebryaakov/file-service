@@ -3,11 +3,11 @@ package file
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"unicode"
 
 	"github.com/google/uuid"
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 )
@@ -25,18 +25,20 @@ type CreateFileDTO struct {
 	Reader io.Reader
 }
 
-func isMn(r rune) bool {
+type mnSet struct{}
+
+func (mnSet) Contains(r rune) bool {
 	return unicode.Is(unicode.Mn, r)
 }
 
-func (d CreateFileDTO) NormalizeName() {
+func (d *CreateFileDTO) NormalizeName() {
 	d.Name = strings.ReplaceAll(d.Name, " ", "_")
-	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
+	t := transform.Chain(norm.NFD, runes.Remove(mnSet{}), norm.NFC)
 	d.Name, _, _ = transform.String(t, d.Name)
 }
 
 func NewFile(dto CreateFileDTO) (*File, error) {
-	bytes, err := ioutil.ReadAll(dto.Reader)
+	bytes, err := io.ReadAll(dto.Reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file model. err: %w", err)
 	}

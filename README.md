@@ -13,7 +13,7 @@
 - viper - конфигурация
 - logrus - логирование
 - godotenv - переменные окружения
-- swaggo/swag - документация API
+- swaggo/swag - документация API (swag init -d cmd,internal/file)
 - minio/minio-go/v7 - работа с minio
 
 ### Перед развёртыванием:
@@ -33,4 +33,5 @@
 - Убедиться, что в файле конфига `config/config.json` имя хоста в конфигурации Minio совпадает с названием сервиса в файле `docker-compose.yml` (по умолчанию - `"host": "miniodb"`).
 - Убедиться, что 8080, 9000 и 9090 порты не заняты
 - Выполнить команду `docker-compose up`.
-Далее, обратившись к `localhost:8000/swagger`, можно проверить работоспособность API
+
+Далее, обратившись к `localhost:8000/swagger/index.html`, можно проверить работоспособность API
