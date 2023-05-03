@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mserebryaakov/file-service/pkg/logger"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -15,11 +15,11 @@ const (
 )
 
 type filesHandler struct {
-	log         *logger.Logger
+	log         *logrus.Entry
 	fileService *service
 }
 
-func NewFilesHandler(log *logger.Logger, fileService *service) *filesHandler {
+func NewFilesHandler(fileService *service, log *logrus.Entry) *filesHandler {
 	return &filesHandler{
 		log:         log,
 		fileService: fileService,

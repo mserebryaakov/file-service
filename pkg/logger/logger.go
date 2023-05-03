@@ -3,52 +3,35 @@ package logger
 import (
 	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
 
-var log *logrus.Entry
+type MainLogHook struct{}
 
-type Logger struct {
-	*logrus.Entry
+func (h *MainLogHook) Fire(entry *logrus.Entry) error {
+	entry.Message = "Main: " + entry.Message
+	return nil
 }
 
-func GetLogger() *Logger {
-	return &Logger{log}
+func (h *MainLogHook) Levels() []logrus.Level {
+	return logrus.AllLevels
 }
 
-// Инициализация logrus
-func init() {
-	// Создание логгера
+func NewLogger(LogLvl string, hook logrus.Hook) *logrus.Entry {
 	l := logrus.New()
 
-	// Установка объекта вывода
+	l.AddHook(hook)
+
 	l.SetOutput(os.Stdout)
 
-	// Устанавка формата вывода
 	l.SetFormatter(&logrus.TextFormatter{})
 
-	// Загрузка файла переменных окружения
-	err := godotenv.Load(".env")
-	if err != nil {
-		l.Fatalf("Failed to load env file: %s", err.Error())
-	}
-
-	// Чтение файла переменных окружения
-	env, err := godotenv.Read(".env")
-	if err != nil {
-		l.Fatalf("Error loading env into map[string]string: %s", err.Error())
-	}
-
-	// Инициализация LOG_LEVEL из параметров окружения
-	logLevel, err := logrus.ParseLevel(env["LOG_LEVEL"])
+	logLevel, err := logrus.ParseLevel(LogLvl)
 	if err != nil {
 		logLevel = logrus.InfoLevel
 	}
 
-	// Установка уровня логирования LOG_LEVEL
 	l.SetLevel(logLevel)
 
-	// Возвращение логгера глобальной переменной
-	log = logrus.NewEntry(l)
+	return logrus.NewEntry(l)
 }

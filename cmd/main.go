@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/mserebryaakov/file-service/config"
 	_ "github.com/mserebryaakov/file-service/docs"
 	"github.com/mserebryaakov/file-service/pkg/httpserver"
@@ -29,28 +28,32 @@ import (
 // @BasePath  /
 func main() {
 	// Получение логера
-	log := logger.GetLogger()
+	log := logger.NewLogger("debug", &logger.MainLogHook{})
 
 	// Получение конфига
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to load configs: %v", err)
+		log.Fatalf("failed to load configs: %v", err)
 	}
 
 	// Чтение файла переменных окружения
-	env, err := godotenv.Read(".env")
+	env, err := config.GetEnvironment()
 	if err != nil {
-		log.Fatalf("Error loading env into map[string]string: %s", err.Error())
+		log.Fatalf(err.Error())
 	}
 
-	repository, err := minio.NewStorage(cfg.Minio.Host+cfg.Minio.Port, env["MINIO_ROOT_USER"], env["MINIO_ROOT_PASSWORD"], false, log)
+	// Создание логера для fileService
+	serviceLog := logger.NewLogger(env.LogLvl, &file.FileServiceLogHook{})
+
+	// Создание слоёв по чистой архитектуре
+	repository, err := minio.NewStorage(cfg.Minio.Host+cfg.Minio.Port, env.MinioRootUser, env.MinioRootPassword, false, serviceLog)
 	if err != nil {
-		log.Fatalf("Minio start error: %v", err)
+		log.Fatalf("minio start error: %v", err)
 	}
 
-	service := file.NewService(repository, log)
+	service := file.NewService(repository, serviceLog)
 
-	handler := file.NewFilesHandler(log, service)
+	handler := file.NewFilesHandler(service, serviceLog)
 
 	router := gin.New()
 

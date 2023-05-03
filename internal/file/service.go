@@ -3,18 +3,29 @@ package file
 import (
 	"context"
 
-	"github.com/mserebryaakov/file-service/pkg/logger"
+	"github.com/sirupsen/logrus"
 )
 
 type service struct {
 	storage Storage
-	logger  *logger.Logger
+	logger  *logrus.Entry
 }
 
-func NewService(storage Storage, logger *logger.Logger) *service {
+type FileServiceLogHook struct{}
+
+func (h *FileServiceLogHook) Fire(entry *logrus.Entry) error {
+	entry.Message = "FileService: " + entry.Message
+	return nil
+}
+
+func (h *FileServiceLogHook) Levels() []logrus.Level {
+	return logrus.AllLevels
+}
+
+func NewService(storage Storage, log *logrus.Entry) *service {
 	return &service{
 		storage: storage,
-		logger:  logger,
+		logger:  log,
 	}
 }
 

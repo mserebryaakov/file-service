@@ -1,9 +1,9 @@
 {
     "server": {
-        "port": ":8000"
+        "port": ":8080"
     },
     "minio": {
-        "host": "miniodb",
+        "host": "localhost",
         "port": ":9000"
     }
 }

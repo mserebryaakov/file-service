@@ -7,17 +7,17 @@ import (
 	"io"
 
 	"github.com/mserebryaakov/file-service/internal/file"
-	"github.com/mserebryaakov/file-service/pkg/logger"
 	"github.com/mserebryaakov/file-service/pkg/minio"
+	"github.com/sirupsen/logrus"
 )
 
 type minioStorage struct {
 	client *minio.Client
-	logger *logger.Logger
+	logger *logrus.Entry
 }
 
-func NewStorage(endpoint, accessKeyID, secretAccessKey string, useSSL bool, logger *logger.Logger) (file.Storage, error) {
-	client, err := minio.NewClient(endpoint, accessKeyID, secretAccessKey, useSSL, *logger)
+func NewStorage(endpoint, accessKeyID, secretAccessKey string, useSSL bool, logger *logrus.Entry) (file.Storage, error) {
+	client, err := minio.NewClient(endpoint, accessKeyID, secretAccessKey, useSSL, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create minio client. err: %w", err)
 	}
@@ -57,7 +57,7 @@ func (m *minioStorage) GetFilesByBucketName(ctx context.Context, bucketName stri
 		return nil, fmt.Errorf("failed to get objects. err: %w", err)
 	}
 	if len(objects) == 0 {
-		return nil, fmt.Errorf("Not found")
+		return nil, fmt.Errorf("not found")
 	}
 
 	var files []*file.File

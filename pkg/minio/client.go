@@ -7,16 +7,16 @@ import (
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/mserebryaakov/file-service/pkg/logger"
+	"github.com/sirupsen/logrus"
 )
 
 type Client struct {
-	log         logger.Logger
+	log         *logrus.Entry
 	minioClient *minio.Client
 }
 
 // Инициализация MinIO Client
-func NewClient(endpoint, accessKeyID, secretAccessKey string, useSSL bool, logger logger.Logger) (*Client, error) {
+func NewClient(endpoint, accessKeyID, secretAccessKey string, useSSL bool, log *logrus.Entry) (*Client, error) {
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
@@ -27,7 +27,7 @@ func NewClient(endpoint, accessKeyID, secretAccessKey string, useSSL bool, logge
 	}
 
 	return &Client{
-		log:         logger,
+		log:         log,
 		minioClient: minioClient,
 	}, nil
 }
@@ -36,6 +36,7 @@ func NewClient(endpoint, accessKeyID, secretAccessKey string, useSSL bool, logge
 func (c *Client) GetFile(ctx context.Context, bucketName, fileId string) (*minio.Object, error) {
 	reader, err := c.minioClient.GetObject(ctx, bucketName, fileId, minio.GetObjectOptions{})
 	if err != nil {
+		c.log.Errorf("failed to get file with id: %s from minio bucket %s. err: %w", fileId, bucketName, err)
 		return nil, fmt.Errorf("failed to get file with id: %s from minio bucket %s. err: %w", fileId, bucketName, err)
 	}
 
@@ -60,13 +61,14 @@ func (c *Client) GetBucketFiles(ctx context.Context, bucketName string) ([]*mini
 	return files, nil
 }
 
-// Загрузка файла в bucketName (если backet не найдена - ошибка)
+// Загрузка файла в bucketName (если backet не найдена - создать)
 func (c *Client) UploadFile(ctx context.Context, fileId, fileName, bucketName string, fileSize int64, reader io.Reader) (string, error) {
 	found, err := c.minioClient.BucketExists(ctx, bucketName)
 	if err != nil || !found {
 		err = c.minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
 		if err != nil {
-			return "", fmt.Errorf("Failed to create Bucket with err: %w", err)
+			c.log.Errorf("failed to create Bucket with err: %w", err)
+			return "", fmt.Errorf("failed to create Bucket with err: %w", err)
 		}
 	}
 
@@ -79,7 +81,8 @@ func (c *Client) UploadFile(ctx context.Context, fileId, fileName, bucketName st
 			ContentType: "application/octet-stream",
 		})
 	if err != nil {
-		return "", fmt.Errorf("Failed to upload file. err: %w", err)
+		c.log.Errorf("failed to upload file. err: %w", err)
+		return "", fmt.Errorf("failed to upload file. err: %w", err)
 	}
 
 	return info.Key, nil
@@ -89,6 +92,7 @@ func (c *Client) UploadFile(ctx context.Context, fileId, fileName, bucketName st
 func (c *Client) DeleteFile(ctx context.Context, noteUUID, fileId string) error {
 	err := c.minioClient.RemoveObject(ctx, noteUUID, fileId, minio.RemoveObjectOptions{})
 	if err != nil {
+		c.log.Errorf("failed to delete file. err: %w", err)
 		return fmt.Errorf("failed to delete file. err: %w", err)
 	}
 	return nil
